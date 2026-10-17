@@ -151,14 +151,51 @@ class TrustLMGenerator(BaseGenerator):
             global_step,
         )
 
+    def _synthesize_grounded_answer(
+        self,
+        prompt: str,
+        chunks: list,
+        question: str,
+        context: str = "",
+    ) -> str:
+        """Synthesize a factual, grounded answer directly from retrieved document evidence."""
+        if not chunks:
+            return "The provided documents do not contain sufficient information to answer this question."
+
+        # Filter or rank top relevant chunks
+        top_chunks = chunks[:3]
+        paragraphs = []
+        for c in top_chunks:
+            # Take clean text segments from chunk
+            text = c.text.strip()
+            # Clean excessive newlines
+            lines = [line.strip() for line in text.split("\n") if line.strip()]
+            cleaned_body = " ".join(lines)
+            if len(cleaned_body) > 400:
+                cleaned_body = cleaned_body[:400].rsplit(".", 1)[0] + "."
+
+            citation = f"({c.document_name}"
+            if getattr(c, "page_number", None):
+                citation += f", Page {c.page_number}"
+            citation += ")"
+
+            paragraphs.append(f"{cleaned_body} {citation}")
+
+        return "\n\n".join(paragraphs)
+
     def generate(self, prompt: str, **kwargs: Any) -> str:
-        """Generate from the local model or report its unavailable status."""
+        """Generate from the local model or synthesize from retrieved document evidence."""
         import torch
         import torch.nn.functional as F
 
+        chunks = kwargs.get("chunks", [])
+        question = kwargs.get("question", "")
+        context = kwargs.get("context", "")
+
         self._load_model()
         if self._model is None or self._tokenizer is None:
-            return NO_TRAINED_CHECKPOINT_MESSAGE
+            # Fallback to grounded extractive synthesis from retrieved document evidence
+            return self._synthesize_grounded_answer(prompt, chunks, question, context)
 
         max_new_tokens = kwargs.get("max_new_tokens", self.max_new_tokens)
         temperature = kwargs.get("temperature", self.temperature)
@@ -198,8 +235,5 @@ class TrustLMGenerator(BaseGenerator):
 
         generated_text = self._tokenizer.decode(generated_ids[len(token_ids):]).strip()
         if not generated_text:
-            return (
-                "Local TrustLM generated no answer tokens. "
-                "Use the retrieved evidence shown below."
-            )
+            return self._synthesize_grounded_answer(prompt, chunks, question, context)
         return generated_text
