@@ -1,0 +1,5 @@
+Reliable artificial intelligence requires robust data pipelines.
+This paragraph contains many irregular spaces and tabs.
+It also has repeated characters like sooo coool and amazing!!!...
+And empty lines that must be properly cleaned out by the sanitization routine.
+The pipeline ensures consistency across all raw text inputs.

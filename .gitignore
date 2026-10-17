@@ -1,0 +1,26 @@
+# Python bytecode and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments and local environment files
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Build and package artifacts
+build/
+dist/
+*.egg-info/
+
+# Generated model and retrieval artifacts
+checkpoints/
+data/knowledge_base/chroma_db/
+evaluation/plots/

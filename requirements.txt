@@ -1,0 +1,25 @@
+# TrustLM: A Custom Large Language Model for Reliable AI Responses
+# Core Dependencies for from-scratch PyTorch Transformer, Verification, Trust Scoring, and Unlearning
+
+torch>=2.2.0
+numpy>=1.26.0
+tiktoken>=0.7.0
+tqdm>=4.66.0
+pandas>=2.2.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# ── RAG Pipeline Dependencies ─────────────────────────────────────────
+# sentence-transformers: Semantic retrieval embeddings (all-MiniLM-L6-v2)
+#   NOTE: These retrieval embeddings are separate from TrustLM's internal
+#   token embeddings (TokenEmbedding / PositionalEmbedding in model/).
+sentence-transformers>=2.7.0
+
+# chromadb: Persistent vector database for storing and searching embeddings
+chromadb>=0.5.0
+
+# pypdf: PDF text extraction for document ingestion
+pypdf>=4.0.0
+
+# python-pptx: PPT text extraction for document ingestion
+python-pptx>=0.6.21

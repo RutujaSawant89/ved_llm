@@ -1,0 +1,7 @@
+The core mechanism of modern Transformers is scaled dot-product attention.
+Given queries, keys, and values, the attention weights are computed using a softmax function applied to scaled inner products.
+In decoder-only language models, a causal mask is applied to prevent tokens from attending to future positions.
+
+Multi-head attention allows the model to jointly attend to information from different representation subspaces at different positions.
+Positional information is injected using learned embeddings or rotary position embeddings.
+Residual connections and layer normalization stabilize optimization across deep stacked layers.

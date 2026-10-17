@@ -1,0 +1,7 @@
+Machine unlearning refers to the process of selectively erasing specific training data from a trained model.
+Traditional neural networks absorb information diffusely across millions of weights.
+When sensitive personal data or copyrighted information needs removal, retraining from scratch is computationally infeasible.
+
+Selective unlearning objectives combine gradient ascent on the target forget set with preservation constraints on the retain set.
+A Kullback-Leibler divergence penalty ensures the model does not suffer from catastrophic forgetting on its general capabilities.
+This enables precise, targeted privacy compliance in modern AI systems.

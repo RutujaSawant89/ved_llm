@@ -1,0 +1,7 @@
+Modular memory systems provide an external, addressable knowledge base for neural architectures.
+Rather than storing every factual association inside static weight matrices, memory slots can be updated dynamically.
+Key-value memory networks read information using content-based addressing.
+
+By decoupling memory from static weights, factual updates and selective erasure become significantly more manageable.
+Specific memory slots can be cleared or modified without requiring full backpropagation through the Transformer layers.
+This modularity serves as a foundational pillar for trustworthy and verifiable AI architectures.

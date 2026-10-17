@@ -1,0 +1,35 @@
+Modular memory systems provide an external, addressable knowledge base for neural architectures.
+Rather than storing every factual association inside static weight matrices, memory slots can be updated dynamically.
+Key-value memory networks read information using content-based addressing.
+By decoupling memory from static weights, factual updates and selective erasure become significantly more manageable.
+Specific memory slots can be cleared or modified without requiring full backpropagation through the Transformer layers.
+This modularity serves as a foundational pillar for trustworthy and verifiable AI architectures.
+
+Machine unlearning refers to the process of selectively erasing specific training data from a trained model.
+Traditional neural networks absorb information diffusely across millions of weights.
+When sensitive personal data or copyrighted information needs removal, retraining from scratch is computationally infeasible.
+Selective unlearning objectives combine gradient ascent on the target forget set with preservation constraints on the retain set.
+A Kullback-Leibler divergence penalty ensures the model does not suffer from catastrophic forgetting on its general capabilities.
+This enables precise, targeted privacy compliance in modern AI systems.
+
+The core mechanism of modern Transformers is scaled dot-product attention.
+Given queries, keys, and values, the attention weights are computed using a softmax function applied to scaled inner products.
+In decoder-only language models, a causal mask is applied to prevent tokens from attending to future positions.
+Multi-head attention allows the model to jointly attend to information from different representation subspaces at different positions.
+Positional information is injected using learned embeddings or rotary position embeddings.
+Residual connections and layer normalization stabilize optimization across deep stacked layers.
+
+Water molecules are composed of two hydrogen atoms bonded to one oxygen atom.
+The speed of light in a vacuum is approximately 299,792,458 meters per second.
+Photosynthesis is the biological process used by plants and other organisms to convert light energy into chemical energy.
+Planets in our solar system orbit the Sun in elliptical paths as governed by Kepler's laws of planetary motion.
+DNA contains the genetic instructions necessary for the development and functioning of all known living organisms.
+Scientific verification requires empirical evidence, rigorous reproducibility, and continuous validation.
+
+Language models represent probability distributions over sequences of words or tokens.
+In recent years, decoder-only autoregressive Transformers have become the dominant architecture.
+These models predict the next token given a preceding context of tokens.
+However, standard language models frequently generate hallucinated statements with high confidence.
+Integrated verification mechanisms are crucial for mission-critical applications.
+By evaluating predictive entropy and internal consistency, a model can self-assess its own uncertainty.
+TrustLM aims to bridge this gap by combining generation with active reliability scoring.

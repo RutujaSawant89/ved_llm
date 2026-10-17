@@ -1,0 +1,8 @@
+Language models represent probability distributions over sequences of words or tokens.
+In recent years, decoder-only autoregressive Transformers have become the dominant architecture.
+These models predict the next token given a preceding context of tokens.
+
+However, standard language models frequently generate hallucinated statements with high confidence.
+Integrated verification mechanisms are crucial for mission-critical applications.
+By evaluating predictive entropy and internal consistency, a model can self-assess its own uncertainty.
+TrustLM aims to bridge this gap by combining generation with active reliability scoring.
