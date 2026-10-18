@@ -193,7 +193,12 @@ class RAGPipeline:
         # 4. Generate
         if generate:
             logger.info("[PIPELINE] Calling generator: %s", self.generator.name)
-            answer = self.generator.generate(prompt)
+            answer = self.generator.generate(
+                prompt,
+                chunks=chunks,
+                question=question,
+                context=context,
+            )
         else:
             answer = "[Generation skipped — retrieval-only mode]"
             logger.info("[PIPELINE] Generation skipped (generate=False).")
