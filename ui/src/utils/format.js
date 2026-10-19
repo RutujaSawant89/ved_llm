@@ -21,3 +21,16 @@ export function trustColor(score) {
   if (num >= 40) return 'var(--amber)'
   return 'var(--red)'
 }
+
+export function getTrustClassification(score) {
+  let num = NaN
+  if (typeof score === 'number') {
+    num = score
+  } else if (typeof score === 'string') {
+    num = parseFloat(score.replace('%', ''))
+  }
+  if (isNaN(num) || num === 0) return 'Low evidence'
+  if (num >= 70) return 'High reliability'
+  if (num >= 40) return 'Moderate reliability'
+  return 'Low reliability'
+}

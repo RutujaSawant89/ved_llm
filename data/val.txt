@@ -1,5 +1,31 @@
-Reliable artificial intelligence requires robust data pipelines.
-This paragraph contains many irregular spaces and tabs.
-It also has repeated characters like sooo coool and amazing!!!...
-And empty lines that must be properly cleaned out by the sanitization routine.
-The pipeline ensures consistency across all raw text inputs.
+Question: What is the Transformer architecture?
+Answer: The Transformer is a deep learning model architecture introduced in 2017 that relies entirely on self-attention mechanisms without recurrence or convolution.
+
+### Key Architectural Details:
+- Eliminates recurrence to enable massive parallel processing across sequence tokens.
+- Employs stacked encoder and decoder layers connected by multi-head self-attention and position-wise feed-forward networks.
+- Uses residual skip connections and layer normalization to preserve gradient flow during deep backpropagation.
+
+Question: How does Multi-Head Attention work?
+Answer: Multi-head attention projects input embeddings into multiple linear subspaces, running scaled dot-product attention in parallel before concatenating the projections.
+
+### Key Architectural Details:
+- Projects queries, keys, and values h times with different learned parameter matrices.
+- Allows the model to jointly attend to information from different representation subspaces at different sequence positions.
+- Prevents averaging out single-head attention weights across conflicting token relationships.
+
+Question: What is Scaled Dot-Product Attention?
+Answer: Scaled dot-product attention computes compatibility scores between query and key vectors, scales them by the square root of the head dimension, and applies softmax to compute weighted values.
+
+### Key Architectural Details:
+- Formula: Attention(Q, K, V) = softmax(Q * K^T / sqrt(d_k)) * V.
+- Scaling by sqrt(d_k) counteracts large magnitude dot-products that push softmax into regions with vanishing gradients.
+- Enables efficient matrix multiplication on modern hardware accelerators.
+
+Question: What is Machine Learning?
+Answer: Machine learning is a branch of artificial intelligence that enables computer algorithms to learn patterns and improve performance directly from data without being explicitly programmed.
+
+### Key Architectural Details:
+- Formulates decision-making as statistical optimization over empirical observations.
+- Encompasses three primary paradigms: supervised learning, unsupervised learning, and reinforcement learning.
+- Generalizes from training distributions to make accurate predictions on unseen data.

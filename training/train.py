@@ -109,6 +109,7 @@ def run_full_training(
     batch_size: int = 16,
     learning_rate: float = 3e-4,
     gradient_accumulation_steps: int = 1,
+    max_steps: int | None = None,
     resume: bool = False,
     device_override: str | None = None,
 ) -> int:
@@ -136,11 +137,12 @@ def run_full_training(
     )
     print(f"Data Safety Verified: {len(train_tokens):,} train tokens | {len(val_tokens):,} val tokens.")
 
-    # Datasets
+    # Datasets with overlapping stride for dense coverage
     train_ds = AutoregressiveDataset(
         token_ids=train_tokens,
         context_length=cfg.model.context_length,
         vocab_size=cfg.model.vocab_size,
+        stride=64,
     )
     val_ds = AutoregressiveDataset(
         token_ids=val_tokens,
@@ -161,6 +163,8 @@ def run_full_training(
     )
     model.print_architecture()
 
+    effective_max_iters = max_steps if max_steps is not None else cfg.training.max_iters
+
     trainer = TrustLMTrainer(
         model=model,
         train_dataset=train_ds,
@@ -168,11 +172,11 @@ def run_full_training(
         learning_rate=learning_rate,
         batch_size=batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
-        max_iters=cfg.training.max_iters,
-        warmup_iters=cfg.training.warmup_iters,
-        eval_interval=cfg.training.eval_interval,
+        max_iters=effective_max_iters,
+        warmup_iters=min(cfg.training.warmup_iters, max(10, effective_max_iters // 10)),
+        eval_interval=min(cfg.training.eval_interval, max(25, effective_max_iters // 4)),
         eval_iters=cfg.training.eval_iters,
-        log_interval=cfg.training.log_interval,
+        log_interval=min(cfg.training.log_interval, 25),
         device=device,
         checkpoint_dir=project_root / "checkpoints",
         plots_dir=project_root / "evaluation" / "plots",
@@ -186,7 +190,7 @@ def run_full_training(
                 latest, model=model, optimizer=trainer.optimizer, device=device
             )
 
-    results = trainer.train(num_epochs=epochs)
+    results = trainer.train(num_epochs=epochs, max_steps=max_steps)
     print("Full training completed successfully.")
     return 0
 
@@ -204,6 +208,7 @@ def main() -> int:
     parser.add_argument(
         "--grad-accum", type=int, default=1, help="Gradient accumulation steps"
     )
+    parser.add_argument("--steps", type=int, default=None, help="Maximum training steps")
     parser.add_argument("--resume", action="store_true", help="Resume from latest checkpoint")
     parser.add_argument(
         "--device", type=str, default=None, help="Force specific device ('cpu', 'cuda', etc.)"
@@ -220,6 +225,7 @@ def main() -> int:
         batch_size=args.batch_size,
         learning_rate=args.lr,
         gradient_accumulation_steps=args.grad_accum,
+        max_steps=args.steps,
         resume=args.resume,
         device_override=args.device,
     )

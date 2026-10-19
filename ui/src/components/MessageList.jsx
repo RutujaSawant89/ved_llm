@@ -1,52 +1,77 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowDown } from 'lucide-react'
 import Message from './Message'
+import ThinkingIndicator from './ThinkingIndicator'
 
-export default function MessageList({ messages, loading, onSuggestionClick }) {
+export default function MessageList({
+  messages = [],
+  loading = false,
+  onRegenerate,
+}) {
   const bottomRef = useRef(null)
+  const scrollContainerRef = useRef(null)
+  const [showScrollBottom, setShowScrollBottom] = useState(false)
 
+  // Scroll to bottom on new messages or loading state
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading])
+    if (!showScrollBottom) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, loading, showScrollBottom])
 
-  if (!messages || messages.length === 0) {
-    return (
-      <div className="chat-empty">
-        <h1>Ved.ai</h1>
-        <p>Ask a question about your uploaded documents</p>
-        <div className="chat-empty-suggestions">
-          <button onClick={() => onSuggestionClick?.("Summarize the key information and findings in my documents.")}>
-            Summarize the key information and findings in my documents.
-          </button>
-          <button onClick={() => onSuggestionClick?.("What are the main requirements and procedures described in the text?")}>
-            What are the main requirements and procedures described in the text?
-          </button>
-          <button onClick={() => onSuggestionClick?.("What evidence or factual data is provided for the core topic?")}>
-            What evidence or factual data is provided for the core topic?
-          </button>
-        </div>
-      </div>
-    )
+  const handleScroll = () => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120
+    setShowScrollBottom(!isAtBottom)
+  }
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    setShowScrollBottom(false)
   }
 
   return (
-    <div className="chat-messages">
-      {messages.map((msg, i) => (
-        <Message
-          key={i}
-          role={msg.role}
-          content={msg.content}
-          sources={msg.sources}
-          trust={msg.trust}
-          verification={msg.verification}
-        />
-      ))}
-      {loading && (
-        <div className="message">
-          <div className="message-label">TrustLM</div>
-          <div className="message-loading">···</div>
-        </div>
+    <div
+      className="chat-scroll-area"
+      ref={scrollContainerRef}
+      onScroll={handleScroll}
+    >
+      <div className="chat-content-width">
+        {messages.map((msg, i) => {
+          const isLast = i === messages.length - 1
+          return (
+            <Message
+              key={i}
+              role={msg.role}
+              content={msg.content}
+              sources={msg.sources}
+              trust={msg.trust}
+              verification={msg.verification}
+              generator={msg.generator}
+              onRegenerate={isLast ? onRegenerate : undefined}
+              canRegenerate={isLast && !loading}
+            />
+          )
+        })}
+
+        {/* Dynamic Multi-Stage Thinking Indicator */}
+        {loading && <ThinkingIndicator />}
+
+        <div ref={bottomRef} style={{ height: 28 }} />
+      </div>
+
+      {showScrollBottom && (
+        <button
+          type="button"
+          className="scroll-to-bottom-btn"
+          onClick={scrollToBottom}
+          title="Scroll to latest messages"
+          aria-label="Scroll to latest"
+        >
+          <ArrowDown size={15} />
+        </button>
       )}
-      <div ref={bottomRef} />
     </div>
   )
 }
