@@ -294,7 +294,11 @@ class TrustLMTrainer:
             self.history["val_losses"].append(initial_val_loss)
             self.history["perplexities"].append(initial_ppl)
 
-        for epoch in range(num_epochs):
+        max_epochs = num_epochs
+        if max_steps is not None and len(self.train_loader) > 0:
+            max_epochs = max(num_epochs, math.ceil(max_steps / max(1, len(self.train_loader))))
+
+        for epoch in range(max_epochs):
             for batch_idx, (x, y) in enumerate(self.train_loader):
                 if self.global_step >= target_steps:
                     break
@@ -345,6 +349,10 @@ class TrustLMTrainer:
                                 "tokens": f"{self.tokens_trained:,}",
                             }
                         )
+                        print(
+                            f"[Step {self.global_step}] loss={avg_train_loss:.4f} lr={lr:.6f} tokens={self.tokens_trained}",
+                            flush=True,
+                        )
 
                     # 7. Periodic Validation
                     if self.global_step % self.eval_interval == 0:
@@ -352,6 +360,10 @@ class TrustLMTrainer:
                         self.history["eval_steps"].append(self.global_step)
                         self.history["val_losses"].append(val_loss)
                         self.history["perplexities"].append(ppl)
+                        print(
+                            f"[Eval Step {self.global_step}] val_loss={val_loss:.4f} perplexity={ppl:.2f}",
+                            flush=True,
+                        )
 
                         # Save best checkpoint
                         if val_loss < self.best_val_loss:

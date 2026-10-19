@@ -93,6 +93,7 @@ class TrainRequest(BaseModel):
     epochs: int = 1
     batch_size: int = 16
     learning_rate: float = 3e-4
+    steps: Optional[int] = None
 
 
 class TrainStatusResponse(BaseModel):
@@ -103,3 +104,4 @@ class TrainStatusResponse(BaseModel):
     val_loss: float = 0.0
     perplexity: float = 0.0
     tokens_processed: int = 0
+    logs: List[str] = Field(default_factory=list)

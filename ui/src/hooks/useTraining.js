@@ -9,12 +9,22 @@ export function useTraining() {
   const [valLossData, setValLossData] = useState([])
   const [logs, setLogs] = useState([])
   const pollTimerRef = useRef(null)
-  const simTimerRef = useRef(null)
 
+  // Fetch device information on initial load
   useEffect(() => {
     api.getHealth()
       .then((h) => {
         if (h?.device) setDevice(h.device.toUpperCase())
+      })
+      .catch(() => {})
+
+    // Check initial training status
+    api.getTrainStatus()
+      .then((status) => {
+        if (status?.running) {
+          setRunning(true)
+          if (status.logs) setLogs(status.logs)
+        }
       })
       .catch(() => {})
   }, [])
@@ -30,9 +40,8 @@ export function useTraining() {
       console.error(err)
     } finally {
       setRunning(false)
-      clearInterval(simTimerRef.current)
       clearInterval(pollTimerRef.current)
-      addLog('[Training] Session stopped.')
+      addLog('[Training] Session stopped by user.')
     }
   }, [addLog])
 
@@ -43,7 +52,7 @@ export function useTraining() {
       setValLossData([])
       setMetrics(null)
 
-      addLog(`[Training] Initializing training run: mode=${params.mode}, epochs=${params.epochs}, lr=${params.learning_rate}`)
+      addLog(`[Training] Initializing run: mode=${params.mode}, epochs=${params.epochs}, lr=${params.learning_rate}`)
       const res = await api.startTraining(params)
 
       if (res?.status === 'already_running') {
@@ -53,45 +62,55 @@ export function useTraining() {
       setRunning(true)
       addLog(`[Training] Process started (PID ${res?.pid || 'active'}).`)
 
-      // Simulate telemetry updates if running subprocess doesn't have open WS
-      let step = 0
-      const totalSteps = params.mode === 'smoke_test' ? 5 : (params.epochs * 1000)
-      let currentLoss = 4.85
+      // Poll real-time backend telemetry
+      clearInterval(pollTimerRef.current)
+      pollTimerRef.current = setInterval(async () => {
+        try {
+          const status = await api.getTrainStatus()
+          if (!status) return
 
-      clearInterval(simTimerRef.current)
-      simTimerRef.current = setInterval(() => {
-        step += params.mode === 'smoke_test' ? 1 : 25
-        if (step > totalSteps) step = totalSteps
+          if (status.logs && status.logs.length > 0) {
+            setLogs(status.logs)
+          }
 
-        // Realistic loss decay with slight noise
-        const decay = Math.exp(-step / (totalSteps * 0.4))
-        currentLoss = +(1.8 + 3.0 * decay + (Math.random() - 0.5) * 0.05).toFixed(4)
-        const perplexity = +(Math.exp(Math.min(currentLoss, 5.0))).toFixed(2)
-        const tokens = step * (params.batch_size || 16) * 128
+          if (status.step > 0) {
+            const newMetric = {
+              step: status.step,
+              totalSteps: status.max_steps || (params.epochs * 1000),
+              loss: status.train_loss,
+              perplexity: status.perplexity,
+              tokens: status.tokens_processed,
+            }
+            setMetrics(newMetric)
 
-        const newMetric = {
-          step,
-          totalSteps,
-          loss: currentLoss,
-          perplexity,
-          tokens,
+            if (status.train_loss > 0) {
+              setTrainLossData((prev) => {
+                if (prev.length > 0 && prev[prev.length - 1].step === status.step) {
+                  return prev
+                }
+                return [...prev, { step: status.step, loss: status.train_loss }]
+              })
+            }
+
+            if (status.val_loss > 0) {
+              setValLossData((prev) => {
+                if (prev.length > 0 && prev[prev.length - 1].step === status.step) {
+                  return prev
+                }
+                return [...prev, { step: status.step, loss: status.val_loss }]
+              })
+            }
+          }
+
+          if (!status.running) {
+            clearInterval(pollTimerRef.current)
+            setRunning(false)
+            addLog('[Training] Process finished. Checkpoint saved.')
+          }
+        } catch {
+          // Keep polling silently during brief hiccups
         }
-        setMetrics(newMetric)
-
-        setTrainLossData((prev) => [...prev, { step, loss: currentLoss }])
-        if (step % 50 === 0 || step === totalSteps || params.mode === 'smoke_test') {
-          const valLoss = +(currentLoss + 0.12 + (Math.random() - 0.5) * 0.03).toFixed(4)
-          setValLossData((prev) => [...prev, { step, loss: valLoss }])
-        }
-
-        addLog(`[Step ${step}] loss=${currentLoss} lr=${params.learning_rate} tokens=${tokens.toLocaleString()}`)
-
-        if (step >= totalSteps) {
-          clearInterval(simTimerRef.current)
-          setRunning(false)
-          addLog('[Training] Run completed successfully. Checkpoint saved.')
-        }
-      }, params.mode === 'smoke_test' ? 1200 : 700)
+      }, 800)
     } catch (err) {
       addLog(`[Training Error] ${err.message || 'Failed to start'}`)
       setRunning(false)
@@ -100,7 +119,6 @@ export function useTraining() {
 
   useEffect(() => {
     return () => {
-      clearInterval(simTimerRef.current)
       clearInterval(pollTimerRef.current)
     }
   }, [])

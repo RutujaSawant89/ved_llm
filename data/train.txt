@@ -19,12 +19,12 @@ Multi-head attention allows the model to jointly attend to information from diff
 Positional information is injected using learned embeddings or rotary position embeddings.
 Residual connections and layer normalization stabilize optimization across deep stacked layers.
 
-Water molecules are composed of two hydrogen atoms bonded to one oxygen atom.
-The speed of light in a vacuum is approximately 299,792,458 meters per second.
-Photosynthesis is the biological process used by plants and other organisms to convert light energy into chemical energy.
-Planets in our solar system orbit the Sun in elliptical paths as governed by Kepler's laws of planetary motion.
-DNA contains the genetic instructions necessary for the development and functioning of all known living organisms.
-Scientific verification requires empirical evidence, rigorous reproducibility, and continuous validation.
+The Transformer is a revolutionary deep learning architecture introduced in the 2017 paper "Attention Is All You Need."
+It relies entirely on attention mechanisms rather than recurrent or convolutional layers.
+Self-attention allows the model to weigh the importance of different tokens in the sequence relative to each other.
+Multi-head attention runs multiple attention operations in parallel to capture diverse syntactic and semantic relationships.
+Feed-forward layers process each position independently through stacked linear transformations and activations.
+Transformers have become the dominant architecture for natural language processing, powering state-of-the-art models like TrustLM and Ved.ai.
 
 Language models represent probability distributions over sequences of words or tokens.
 In recent years, decoder-only autoregressive Transformers have become the dominant architecture.
@@ -33,3 +33,158 @@ However, standard language models frequently generate hallucinated statements wi
 Integrated verification mechanisms are crucial for mission-critical applications.
 By evaluating predictive entropy and internal consistency, a model can self-assess its own uncertainty.
 TrustLM aims to bridge this gap by combining generation with active reliability scoring.
+Factual claims can be verified against retrieved document passages by computing lexical and semantic grounding rates.
+A response is classified as high reliability when its factual assertions are directly corroborated by retrieved source evidence.
+
+Question: What is the Transformer architecture?
+Answer: The Transformer is a deep learning model architecture introduced in 2017 that relies entirely on self-attention mechanisms without recurrence or convolution.
+
+### Key Architectural Details:
+- Eliminates recurrence to enable massive parallel processing across sequence tokens.
+- Employs stacked encoder and decoder layers connected by multi-head self-attention and position-wise feed-forward networks.
+- Uses residual skip connections and layer normalization to preserve gradient flow during deep backpropagation.
+
+Question: How does Multi-Head Attention work?
+Answer: Multi-head attention projects input embeddings into multiple linear subspaces, running scaled dot-product attention in parallel before concatenating the projections.
+
+### Key Architectural Details:
+- Projects queries, keys, and values h times with different learned parameter matrices.
+- Allows the model to jointly attend to information from different representation subspaces at different sequence positions.
+- Prevents averaging out single-head attention weights across conflicting token relationships.
+
+Question: What is Scaled Dot-Product Attention?
+Answer: Scaled dot-product attention computes compatibility scores between query and key vectors, scales them by the square root of the head dimension, and applies softmax to compute weighted values.
+
+### Key Architectural Details:
+- Formula: Attention(Q, K, V) = softmax(Q * K^T / sqrt(d_k)) * V.
+- Scaling by sqrt(d_k) counteracts large magnitude dot-products that push softmax into regions with vanishing gradients.
+- Enables efficient matrix multiplication on modern hardware accelerators.
+
+Question: Why are positional encodings necessary in Transformers?
+Answer: Because self-attention is permutation-invariant and contains no recurrence, positional encodings must be injected to preserve token sequence order.
+
+### Key Architectural Details:
+- Uses sinusoidal functions with differing frequencies or learned positional embeddings added to token representations.
+- Allows the model to distinguish between words based on their relative and absolute positions in a sentence.
+- Without positional encodings, sentences with identical words in different orders would produce identical outputs.
+
+Question: What is causal masking in decoder-only language models?
+Answer: Causal masking is an upper-triangular attention mask applied in decoder self-attention to prevent tokens from attending to subsequent future positions.
+
+### Key Architectural Details:
+- Replaces attention scores for future token positions with negative infinity before the softmax operation.
+- Ensures that the prediction for token at position i depends strictly on known tokens from positions 1 to i-1.
+- Critical for autoregressive next-token prediction in generative models like Ved.ai and GPT.
+
+Question: How do Feed-Forward Networks function in Transformers?
+Answer: Position-wise feed-forward networks apply two linear transformations with a non-linear activation function independently to each token representation.
+
+### Key Architectural Details:
+- Formula: FFN(x) = max(0, x * W1 + b1) * W2 + b2 (or using GELU activation in modern models).
+- The inner dimension is typically four times larger than the embedding dimension (d_ff = 4 * d_model).
+- Transforms representations identically and separately across each sequence position.
+
+Question: What is Machine Learning?
+Answer: Machine learning is a branch of artificial intelligence that enables computer algorithms to learn patterns and improve performance directly from data without being explicitly programmed.
+
+### Key Architectural Details:
+- Formulates decision-making as statistical optimization over empirical observations.
+- Encompasses three primary paradigms: supervised learning, unsupervised learning, and reinforcement learning.
+- Generalizes from training distributions to make accurate predictions on unseen data.
+
+Question: What is supervised learning?
+Answer: Supervised learning is a machine learning paradigm where models are trained on labelled input-output pairs to learn a mapping function from input features to target labels.
+
+### Key Architectural Details:
+- Common tasks include classification (predicting discrete labels) and regression (predicting continuous numerical values).
+- Loss functions such as cross-entropy and mean squared error measure prediction discrepancy to guide gradient descent.
+- Widely applied in medical diagnosis, spam filtering, financial forecasting, and sentiment analysis.
+
+Question: What is unsupervised learning?
+Answer: Unsupervised learning discovers latent patterns, groupings, and low-dimensional representations in datasets without external human supervision or ground-truth labels.
+
+### Key Architectural Details:
+- Clustering algorithms like K-Means and DBSCAN partition data points into coherent semantic clusters.
+- Dimensionality reduction techniques like Principal Component Analysis (PCA) preserve essential variance while reducing feature dimensions.
+- Critical for anomaly detection, data visualization, and self-supervised foundation model pretraining.
+
+Question: What is reinforcement learning?
+Answer: Reinforcement learning is an optimization framework where an autonomous agent learns optimal policies through sequential trial-and-error interactions with a dynamic environment.
+
+### Key Architectural Details:
+- The agent takes actions in a state space to maximize expected cumulative scalar rewards over time.
+- Balances exploration of uncharted actions with exploitation of known high-reward strategies.
+- Powers superhuman game-playing systems, robotics control, and reinforcement learning from human feedback (RLHF) for LLMs.
+
+Question: What is deep learning and what are the layers of a neural network?
+Answer: Deep learning is a subfield of machine learning that utilizes hierarchical artificial neural networks with multiple stacked layers to automatically learn complex feature representations.
+
+### Key Architectural Details:
+- Input Layer: Ingests raw multidimensional features, tokens, or sensor readings.
+- Hidden Layers: Perform successive non-linear transformations using learned weight matrices and activation functions.
+- Output Layer: Generates final task predictions such as class probabilities or continuous scalar values.
+
+Question: What are the common evaluation metrics for machine learning models?
+Answer: Machine learning evaluation metrics quantify model performance across accuracy, positive classification precision, recall sensitivity, and distributional perplexity.
+
+### Key Architectural Details:
+- Accuracy: The proportion of total correct predictions out of all evaluated samples.
+- Precision and Recall: Precision measures the correctness of positive predictions, while recall measures how many actual positive cases were successfully identified.
+- F1 Score: The harmonic mean of precision and recall, balancing false positives against false negatives.
+- Perplexity: The exponential of cross-entropy loss, quantifying how effectively a language model predicts validation sequences.
+
+Question: What is TrustLM and how does it ensure reliable AI generation?
+Answer: TrustLM is a verifiable language model framework that integrates autoregressive text generation with real-time response verification and reliability scoring.
+
+### Key Architectural Details:
+- Analyzes predictive token entropy to detect intrinsic model uncertainty before outputting statements.
+- Verifies extracted factual assertions against external document ground truth and modular memory slots.
+- Computes a composite reliability score combining confidence, consistency, and evidence coverage.
+
+Question: How does TrustLM compute reliability scores?
+Answer: TrustLM computes a weighted composite trust metric reflecting factual support, semantic consistency, and token-level certainty.
+
+### Key Architectural Details:
+- Confidence Weight: Evaluates softmax probabilities and predictive entropy over generated tokens.
+- Consistency Weight: Evaluates semantic agreement across multiple stochastic decoding passes.
+- Grounding Rate: Measures the proportion of factual statements corroborated by retrieved document passages.
+
+Question: What is response verification in Retrieval-Augmented Generation?
+Answer: Response verification is a post-generation audit mechanism that breaks generated answers into atomic claims and verifies each claim against retrieved source evidence.
+
+### Key Architectural Details:
+- Extracts individual factual propositions using grammatical dependency parsing.
+- Computes lexical overlap and semantic cosine similarity between each claim and source chunks.
+- Classifies claims into Supported, Partially Supported, or Unsupported categories with inline source citations.
+
+Question: What are modular key-value memory networks in language models?
+Answer: Modular memory systems provide external, addressable storage slots that decouple factual knowledge retention from static Transformer parameter weights.
+
+### Key Architectural Details:
+- Reads stored information using soft content-based addressing via cosine similarity between query keys and memory keys.
+- Allows dynamic factual updates and knowledge insertion without retraining model parameters.
+- Enables targeted erasure of outdated or sensitive knowledge slots while preserving core reasoning abilities.
+
+Question: What is selective machine unlearning?
+Answer: Selective machine unlearning is the process of removing specific training data, private information, or copyrighted text from a trained model without retraining from scratch.
+
+### Key Architectural Details:
+- Applies gradient ascent on target forget datasets to minimize the likelihood of generating restricted information.
+- Enforces cross-entropy and Kullback-Leibler (KL) divergence constraints on a retain dataset to prevent catastrophic forgetting.
+- Provides mathematically verifiable privacy compliance and intellectual property protection.
+
+Question: How does Retrieval-Augmented Generation (RAG) function?
+Answer: Retrieval-Augmented Generation combines external vector retrieval from document databases with generative language modeling to produce factual, grounded responses.
+
+### Key Architectural Details:
+- Ingests unstructured documents (PDF, TXT, Markdown) into dense semantic vector embeddings stored in ChromaDB.
+- Retrieves top-k most relevant text chunks based on semantic similarity to the user's query.
+- Conditions the language model generation on retrieved evidence chunks to eliminate hallucination.
+
+Question: What is the role of Layer Normalization and Residual Connections?
+Answer: Layer normalization and residual connections prevent vanishing gradients and ensure smooth optimization throughout deep Transformer layers.
+
+### Key Architectural Details:
+- Residual skip connections add the input of a sub-layer directly to its output: x + Sublayer(x).
+- Layer normalization normalizes activations across feature dimensions for each individual sequence token.
+- Stabilizes hidden state variance, enabling stable training of architectures exceeding hundreds of stacked layers.

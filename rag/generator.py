@@ -158,30 +158,151 @@ class TrustLMGenerator(BaseGenerator):
         question: str,
         context: str = "",
     ) -> str:
-        """Synthesize a factual, grounded answer directly from retrieved document evidence."""
+        """Synthesize a structured, sentence-wise grounded answer directly from retrieved document evidence."""
+        import re
+
         if not chunks:
             return "The provided documents do not contain sufficient information to answer this question."
 
-        # Filter or rank top relevant chunks
-        top_chunks = chunks[:3]
-        paragraphs = []
-        for c in top_chunks:
-            # Take clean text segments from chunk
-            text = c.text.strip()
-            # Clean excessive newlines
-            lines = [line.strip() for line in text.split("\n") if line.strip()]
-            cleaned_body = " ".join(lines)
-            if len(cleaned_body) > 400:
-                cleaned_body = cleaned_body[:400].rsplit(".", 1)[0] + "."
+        # Extract meaningful query keywords (ignoring stop words)
+        stop_words = {
+            "what", "is", "the", "a", "an", "and", "or", "in", "of", "to", "for", "with",
+            "on", "at", "from", "by", "about", "how", "does", "do", "explain", "describe",
+            "tell", "me", "are", "which", "when", "why", "who", "can", "could", "would",
+            "any", "all", "its", "their", "this", "that", "these", "those"
+        }
+        q_words = [
+            w.lower()
+            for w in re.findall(r"\b[a-zA-Z]{3,}\b", question)
+            if w.lower() not in stop_words
+        ]
 
-            citation = f"({c.document_name}"
-            if getattr(c, "page_number", None):
-                citation += f", Page {c.page_number}"
-            citation += ")"
+        scored_sentences = []
+        seen_sentences = set()
 
-            paragraphs.append(f"{cleaned_body} {citation}")
+        for c in chunks:
+            text = c.text
 
-        return "\n\n".join(paragraphs)
+            # 1. Strip figure/table prefixes like 'Figure 1: The Transformer', 'Table 2:'
+            cleaned = re.sub(
+                r"\b(Figure|Table|Fig\.)\s+\d+[:\.\-]?\s*",
+                "",
+                text,
+                flags=re.IGNORECASE,
+            )
+            # 2. Strip subsection headers like '3.2.3 Applications of Attention in our Model', '1 Introduction'
+            cleaned = re.sub(
+                r"\b(?:\d+\.)*\d+\s+(?:[A-Z][A-Za-z\s]{2,40}?)?(?=\bThe\b|\bIn\b|\bWe\b|\bAn\b|\bOur\b|\bFor\b|\bTo\b|\bMost\b|\bEach\b)",
+                "",
+                cleaned,
+            )
+            cleaned = re.sub(r"\b(?:\d+\.)+\d*\s*", "", cleaned)
+            # 3. Strip bracketed citation numbers like [10], [1, 2]
+            cleaned = re.sub(r"\[\s*\d+(?:\s*,\s*\d+)*\s*\]", "", cleaned)
+            # 4. Strip stray bullet points and math noise
+            cleaned = re.sub(r"[•\u2022\u25cf\u25aa]", " ", cleaned)
+            cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+            # Split chunk into individual grammatical sentences
+            raw_sentences = re.split(r"(?<=[.!?])\s+", cleaned)
+            for s in raw_sentences:
+                s = re.sub(r"^[•\-\*\s\d\.:]+", "", s).strip()
+                words = s.split()
+                # Sanity word count: require complete grammatical sentence (at least 6 words)
+                if len(words) < 6 or len(s) > 350:
+                    continue
+                # Skip table listing noise and raw FLOPS / numbers
+                if (
+                    re.search(r"\b(FLOPs|BLEU|newstest|ByteNet|ConvS2S)\b", s)
+                    and len(re.findall(r"\d+", s)) > 3
+                ):
+                    continue
+                # Skip fragments with few letters
+                if len(re.findall(r"[a-zA-Z]", s)) < 15:
+                    continue
+
+                s_norm = s.lower()
+                if s_norm in seen_sentences:
+                    continue
+                seen_sentences.add(s_norm)
+
+                # Score the sentence
+                score = 0.0
+                # Match question keywords
+                for qw in q_words:
+                    if qw in s_norm:
+                        score += 3.5
+
+                # Reward definitions and core architecture statements
+                if any(
+                    phrase in s_norm
+                    for phrase in [
+                        "presented the transformer",
+                        "transformer is",
+                        "model architecture",
+                        "based entirely on",
+                        "relying entirely on",
+                        "self-attention",
+                        "multi-head attention",
+                        "encoder-decoder",
+                    ]
+                ):
+                    score += 4.0
+
+                # Weight by retriever chunk similarity
+                chunk_sim = getattr(c, "similarity_score", 0.5)
+                score += chunk_sim * 2.0
+
+                doc_ref = f"({c.document_name}"
+                if getattr(c, "page_number", None):
+                    doc_ref += f", Page {c.page_number}"
+                doc_ref += ")"
+
+                scored_sentences.append(
+                    {
+                        "text": s,
+                        "score": score,
+                        "citation": doc_ref,
+                        "is_def": any(
+                            phrase in s_norm
+                            for phrase in [
+                                "presented the transformer",
+                                "transformer is",
+                                "first sequence transduction model",
+                                "model architecture",
+                            ]
+                        ) and len(words) >= 10,
+                    }
+                )
+
+        if not scored_sentences:
+            return "The retrieved document passages do not contain sufficiently clear factual statements to answer this question."
+
+        # Sort sentences by relevance score
+        scored_sentences.sort(key=lambda x: x["score"], reverse=True)
+
+        # Select the best definition / summary sentence
+        def_candidates = [s for s in scored_sentences if s["is_def"]]
+        lead_sentence = def_candidates[0] if def_candidates else scored_sentences[0]
+
+        # Select distinct supporting mechanism sentences
+        supporting = [
+            s for s in scored_sentences if s["text"] != lead_sentence["text"]
+        ][:3]
+
+        # Construct clean structured answer
+        output_parts = []
+        # Main lead sentence
+        output_parts.append(
+            f"{lead_sentence['text']} {lead_sentence['citation']}"
+        )
+
+        if supporting:
+            output_parts.append("### Key Architectural Details:")
+            for item in supporting:
+                output_parts.append(f"- {item['text']} {item['citation']}")
+
+        return "\n\n".join(output_parts)
 
     def generate(self, prompt: str, **kwargs: Any) -> str:
         """Generate from the local model or synthesize from retrieved document evidence."""

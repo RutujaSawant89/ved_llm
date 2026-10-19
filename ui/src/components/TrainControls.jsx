@@ -1,15 +1,18 @@
 import { useState } from 'react'
+import { Play, Square, Cpu, Sliders } from 'lucide-react'
 
 export default function TrainControls({ running, onStart, onStop, device = 'CPU' }) {
   const [mode, setMode] = useState('smoke_test')
-  const [epochs, setEpochs] = useState(1)
+  const [epochs, setEpochs] = useState(5)
+  const [steps, setSteps] = useState(1000)
   const [batchSize, setBatchSize] = useState(16)
   const [learningRate, setLearningRate] = useState('3e-4')
 
   const handleStart = () => {
     onStart({
       mode,
-      epochs: parseInt(epochs) || 1,
+      epochs: parseInt(epochs) || 5,
+      steps: mode === 'smoke_test' ? 5 : (parseInt(steps) || 1000),
       batch_size: parseInt(batchSize) || 16,
       learning_rate: parseFloat(learningRate) || 3e-4,
     })
@@ -25,8 +28,22 @@ export default function TrainControls({ running, onStart, onStop, device = 'CPU'
           disabled={running}
         >
           <option value="smoke_test">Smoke Test (5 steps)</option>
-          <option value="full">Full Training</option>
+          <option value="full">Full Pretraining</option>
         </select>
+      </div>
+
+      <div className="train-field">
+        <label>Target Steps</label>
+        <input
+          type="number"
+          min="5"
+          max="50000"
+          step="50"
+          value={mode === 'smoke_test' ? 5 : steps}
+          onChange={(e) => setSteps(e.target.value)}
+          disabled={running || mode === 'smoke_test'}
+          style={{ width: '84px' }}
+        />
       </div>
 
       <div className="train-field">
@@ -69,17 +86,22 @@ export default function TrainControls({ running, onStart, onStop, device = 'CPU'
 
       <div className="train-field">
         <label>Device</label>
-        <div className="train-device">{device}</div>
+        <div className="train-device">
+          <Cpu size={12} />
+          <span>{device}</span>
+        </div>
       </div>
 
       <div style={{ marginLeft: 'auto' }}>
         {running ? (
-          <button type="button" className="btn-stop" onClick={onStop}>
-            Stop
+          <button type="button" className="train-btn-stop" onClick={onStop}>
+            <Square size={13} fill="currentColor" />
+            <span>Stop Run</span>
           </button>
         ) : (
-          <button type="button" className="btn-start" onClick={handleStart}>
-            Start Training
+          <button type="button" className="train-btn-start" onClick={handleStart}>
+            <Play size={13} fill="currentColor" />
+            <span>{mode === 'smoke_test' ? 'Run Smoke Test' : 'Start Pretraining'}</span>
           </button>
         )}
       </div>

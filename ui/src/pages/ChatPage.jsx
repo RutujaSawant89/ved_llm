@@ -1,44 +1,153 @@
 import { useState } from 'react'
-import { useChat } from '../hooks/useChat'
+import {
+  FileSearch,
+  Cpu,
+  CheckCircle,
+  AlertTriangle,
+  Quote,
+  Sparkles,
+} from 'lucide-react'
 import MessageList from '../components/MessageList'
 import ChatInput from '../components/ChatInput'
-import GenSettings from '../components/GenSettings'
 
-export default function ChatPage() {
-  const {
-    messages,
-    loading,
-    settings,
-    setSettings,
-    isModelReady,
-    sendMessage,
-  } = useChat()
+export default function ChatPage({
+  messages = [],
+  loading = false,
+  settings,
+  setSettings,
+  docStats,
+  sendMessage,
+  regenerateLast,
+  refreshStats,
+}) {
+  const [toast, setToast] = useState(null)
 
-  const [showSettings, setShowSettings] = useState(false)
+  const handleDocumentUploaded = (fileName) => {
+    refreshStats?.()
+    setToast(`Document "${fileName}" successfully indexed in knowledge base.`)
+    setTimeout(() => setToast(null), 4000)
+  }
+
+  const totalChunks = docStats?.total_chunks ?? 0
+  const isIndexed = totalChunks > 0
+
+  const fiveSuggestions = [
+    {
+      label: 'Key Findings',
+      query: 'Summarize the core findings, conclusions, and takeaways in the documents.',
+      icon: FileSearch,
+    },
+    {
+      label: 'Methodology',
+      query: 'Explain the core architecture, mechanisms, and methodology described.',
+      icon: Cpu,
+    },
+    {
+      label: 'Claim Verification',
+      query: 'Extract all verifiable factual claims and statistics from the uploaded materials.',
+      icon: CheckCircle,
+    },
+    {
+      label: 'Limitations',
+      query: 'What constraints, open questions, or limitations are highlighted?',
+      icon: AlertTriangle,
+    },
+    {
+      label: 'Source Citations',
+      query: 'List the primary citations, document references, and source passages.',
+      icon: Quote,
+    },
+  ]
+
+  const isEmpty = messages.length === 0
 
   return (
     <div className="chat-container">
-      <MessageList
-        messages={messages}
-        loading={loading}
-        onSuggestionClick={sendMessage}
-        isModelReady={isModelReady}
-      />
+      {/* Toast Notification */}
+      {toast && (
+        <div className="toast-container">
+          <div className="toast-item">
+            <span>{toast}</span>
+          </div>
+        </div>
+      )}
 
-      <div style={{ marginTop: 'auto' }}>
-        {showSettings && (
-          <GenSettings
-            settings={settings}
-            onChange={setSettings}
+      {isEmpty ? (
+        /* ================= Centered Empty State ================= */
+        <div className="chat-scroll-area centered-empty-wrapper">
+          <div className="chat-centered-hero">
+            {/* Status Pill */}
+            <div className="chat-empty-badge">
+              <span
+                className={`chat-empty-badge-dot ${isIndexed ? '' : 'empty'}`}
+              />
+              <span className="chat-empty-badge-text">
+                {isIndexed
+                  ? `${totalChunks} document chunks indexed in ChromaDB`
+                  : 'No documents indexed yet — upload files to verify answers'}
+              </span>
+            </div>
+
+            {/* Hero Headings */}
+            <h1 className="chat-empty-title">Research with context.</h1>
+            <p className="chat-empty-subtitle">
+              Ask questions, explore your documents, and inspect real evidence with TrustLM reliability scoring.
+            </p>
+
+            {/* Centered Message Composer */}
+            <div className="centered-composer-wrap">
+              <ChatInput
+                onSend={sendMessage}
+                disabled={loading}
+                settings={settings}
+                onUpdateSettings={setSettings}
+                onDocumentUploaded={handleDocumentUploaded}
+                isCentered={true}
+              />
+            </div>
+
+            {/* 5 Minimal Suggestion Chips Below Centered Input */}
+            <div className="five-suggestions-row">
+              {fiveSuggestions.map((s, idx) => {
+                const Icon = s.icon
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="suggestion-chip"
+                    onClick={() => sendMessage(s.query)}
+                    title={s.query}
+                  >
+                    <Icon size={13} className="suggestion-chip-icon" />
+                    <span>{s.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ================= Active Conversation View ================= */
+        <>
+          <MessageList
+            messages={messages}
+            loading={loading}
+            onSuggestionClick={sendMessage}
+            docStats={docStats}
+            onRegenerate={regenerateLast}
           />
-        )}
-        <ChatInput
-          onSend={sendMessage}
-          disabled={loading}
-          showSettings={showSettings}
-          onToggleSettings={() => setShowSettings(!showSettings)}
-        />
-      </div>
+
+          {/* Docked Floating Composer at bottom */}
+          <ChatInput
+            onSend={sendMessage}
+            disabled={loading}
+            settings={settings}
+            onUpdateSettings={setSettings}
+            onDocumentUploaded={handleDocumentUploaded}
+            isCentered={false}
+          />
+        </>
+      )}
     </div>
   )
 }
