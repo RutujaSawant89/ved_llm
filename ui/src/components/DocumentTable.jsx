@@ -44,7 +44,7 @@ export default function DocumentTable({ documents = [], onDelete, onClearAll }) 
       <div className="doc-section-header">
         <div className="doc-section-left">
           <span className="doc-section-title">Indexed Documents</span>
-          <span className="doc-section-count">{documents.length}</span>
+          <span className="doc-section-count tabular-nums">{documents.length}</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -202,19 +202,23 @@ export default function DocumentTable({ documents = [], onDelete, onClearAll }) 
                 </td>
                 <td>
                   <span
+                    className="tabular-nums"
                     style={{
                       fontFamily: 'var(--mono)',
                       fontSize: 'var(--text-xs)',
-                      background: 'var(--bg-3)',
-                      padding: '2px 6px',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.07)',
+                      boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+                      padding: '2px 7px',
                       borderRadius: 'var(--radius-xs)',
+                      color: 'var(--text-secondary)',
                     }}
                   >
                     {chunkCount} chunks
                   </span>
                 </td>
                 <td>
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                  <span className="tabular-nums" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
                     {formatDate(doc.ingested_at || doc.date || new Date().toISOString())}
                   </span>
                 </td>
