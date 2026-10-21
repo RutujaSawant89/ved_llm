@@ -1,3 +1,4 @@
+import { FileText } from 'lucide-react'
 import AnswerAnalysis from './AnswerAnalysis'
 import MessageActions from './MessageActions'
 
@@ -67,9 +68,11 @@ function renderInlineMarkdown(str) {
       parts.push(<strong key={key++}>{match[2]}</strong>)
     } else if (match[3]) {
       // Citation (doc, page)
+      const cleanCitation = match[3].replace(/,\s*Page\s*/i, ' · p.')
       parts.push(
-        <span key={key++} className="inline-citation-tag">
-          {match[3]}
+        <span key={key++} className="inline-citation-tag" title={match[3]}>
+          <FileText size={10.5} style={{ opacity: 0.7 }} />
+          <span>{cleanCitation}</span>
         </span>
       )
     }

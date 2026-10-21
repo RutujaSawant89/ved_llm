@@ -169,9 +169,9 @@ export default function AnswerAnalysis({ trust, verification, sources = [] }) {
             </div>
           </div>
 
-          <span className="ved.ai-brand">Ved.ai</span>
+          <span className="ved-brand">Ved.ai</span>
 
-          <span className="trustlm-score-pill" style={{ color }}>
+          <span className="trustlm-score-pill tabular-nums" style={{ color }}>
             {scoreVal}%
           </span>
 
@@ -179,7 +179,7 @@ export default function AnswerAnalysis({ trust, verification, sources = [] }) {
 
           <span className="trustlm-meta-sep">·</span>
 
-          <span className="trustlm-stats">
+          <span className="trustlm-stats tabular-nums">
             {hasClaims ? `${claims.length} claim${claims.length === 1 ? '' : 's'}` : '0 claims'}
             {' · '}
             {sourceCount} source{sourceCount === 1 ? '' : 's'}

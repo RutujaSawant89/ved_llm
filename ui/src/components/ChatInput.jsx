@@ -206,15 +206,18 @@ export default function ChatInput({
           </div>
 
           <div className="composer-tools-right">
+            {text.trim() && !disabled && (
+              <span className="composer-kbd-hint">↵ send</span>
+            )}
             <button
               type="button"
-              className="composer-send-btn"
+              className={`composer-send-btn ${text.trim() ? 'has-text' : ''}`}
               onClick={handleSend}
               disabled={!text.trim() || disabled}
               title="Send question (Enter)"
               aria-label="Send question"
             >
-              <ArrowUp size={16} strokeWidth={2.2} />
+              <ArrowUp size={15} strokeWidth={2.4} />
             </button>
           </div>
         </div>
