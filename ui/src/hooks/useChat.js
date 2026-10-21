@@ -13,14 +13,23 @@ function loadConversations() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((c) => ({
+          ...c,
+          title: c.title === 'New Research' ? 'New Chat' : c.title,
+          messages: (c.messages || []).map((m) => ({
+            ...m,
+            generator: m.generator && m.generator.includes('TrustLM') ? 'Ved.ai' : m.generator || 'Ved.ai',
+          })),
+        }))
+      }
     }
   } catch (e) {
     console.error('Failed to load conversations from localStorage:', e)
   }
   const defaultConv = {
     id: generateId(),
-    title: 'Research Session',
+    title: 'New Chat',
     created_at: new Date().toISOString(),
     messages: [],
   }
@@ -85,7 +94,7 @@ export function useChat() {
   const newChat = useCallback(() => {
     const newConv = {
       id: generateId(),
-      title: 'New Research',
+      title: 'New Chat',
       created_at: new Date().toISOString(),
       messages: [],
     }
@@ -106,7 +115,7 @@ export function useChat() {
       if (filtered.length === 0) {
         const fresh = {
           id: generateId(),
-          title: 'Research Session',
+          title: 'New Chat',
           created_at: new Date().toISOString(),
           messages: [],
         }
@@ -171,7 +180,7 @@ export function useChat() {
           sources: res.sources || [],
           trust: res.trust,
           verification: res.verification,
-          generator: res.generator || 'TrustLM',
+          generator: res.generator && !res.generator.includes('TrustLM') ? res.generator : 'Ved.ai',
           timestamp: new Date().toISOString(),
         }
 
@@ -230,7 +239,7 @@ export function useChat() {
         sources: res.sources || [],
         trust: res.trust,
         verification: res.verification,
-        generator: res.generator || 'TrustLM',
+        generator: res.generator && !res.generator.includes('TrustLM') ? res.generator : 'Ved.ai',
         timestamp: new Date().toISOString(),
       }
 

@@ -39,7 +39,6 @@ export default function Sidebar({
   }
 
   const totalChunks = docStats?.total_chunks ?? 0
-  const isIndexed = totalChunks > 0
 
   return (
     <>
@@ -53,9 +52,8 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'} ${
-          isMobileOpen ? 'mobile-open' : ''
-        }`}
+        className={`sidebar ${isCollapsed ? 'collapsed' : 'expanded'} ${isMobileOpen ? 'mobile-open' : ''
+          }`}
       >
         {/* Brand Header */}
         <div className="sidebar-header">
@@ -105,10 +103,10 @@ export default function Sidebar({
             type="button"
             className="sidebar-new-chat-btn"
             onClick={handleNewChat}
-            title="Start new research conversation"
+            title="Start new chat"
           >
             <Plus size={15} />
-            {!isCollapsed && <span>New Research</span>}
+            {!isCollapsed && <span>New Chat</span>}
           </button>
         </div>
 
@@ -192,28 +190,8 @@ export default function Sidebar({
           </div>
         )}
 
-        {/* Bottom Section: Indexing Status & Profile / Settings Button */}
+        {/* Bottom Section: Profile / Settings Button */}
         <div className="sidebar-footer">
-          {/* Status pill */}
-          <div
-            className="sidebar-status-pill"
-            title={
-              isIndexed
-                ? `${totalChunks} document chunks indexed in ChromaDB`
-                : 'No documents indexed in knowledge base'
-            }
-          >
-            <span
-              className={`sidebar-status-dot ${isIndexed ? '' : 'inactive'}`}
-            />
-            {!isCollapsed && (
-              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                {isIndexed
-                  ? `${totalChunks} chunks indexed`
-                  : 'Knowledge base empty'}
-              </span>
-            )}
-          </div>
 
           {/* User Profile & Settings Trigger */}
           <button
@@ -226,7 +204,7 @@ export default function Sidebar({
             <div className="sidebar-profile-avatar">VS</div>
             {!isCollapsed && (
               <div className="sidebar-profile-info">
-                <span className="sidebar-profile-name">Dr. Viraj Sawant</span>
+                <span className="sidebar-profile-name">Viraj</span>
                 <span className="sidebar-profile-role">Settings & Auth</span>
               </div>
             )}

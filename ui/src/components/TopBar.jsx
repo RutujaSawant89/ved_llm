@@ -8,9 +8,6 @@ export default function TopBar({
   onClearChat,
   hasMessages = false,
 }) {
-  const totalChunks = docStats?.total_chunks ?? 0
-  const isIndexed = totalChunks > 0
-
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -42,22 +39,6 @@ export default function TopBar({
             <span>Clear</span>
           </button>
         )}
-
-        <div
-          className="topbar-rag-badge"
-          title={
-            isIndexed
-              ? `RAG Active with ${totalChunks} chunks in knowledge base`
-              : 'Knowledge base is empty. Upload documents in the Documents tab.'
-          }
-        >
-          <span
-            className={`rag-status-dot ${isIndexed ? 'active' : 'inactive'}`}
-          />
-          <span>{isIndexed ? 'RAG Active' : 'RAG Standby'}</span>
-          <span style={{ color: 'var(--border-focus)' }}>·</span>
-          <span>{totalChunks} chunks</span>
-        </div>
       </div>
     </header>
   )

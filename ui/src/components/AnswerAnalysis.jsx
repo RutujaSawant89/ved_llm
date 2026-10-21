@@ -57,7 +57,7 @@ export default function AnswerAnalysis({ trust, verification, sources = [] }) {
       await navigator.clipboard.writeText(text)
       setCopiedIndex(index)
       setTimeout(() => setCopiedIndex(null), 2000)
-    } catch (err) {}
+    } catch (err) { }
   }
 
   // Handle clicking a claim to cross-link with sources
@@ -126,7 +126,7 @@ export default function AnswerAnalysis({ trust, verification, sources = [] }) {
       <div
         className="trustlm-summary-row"
         onClick={() => setIsExpanded(!isExpanded)}
-        title="Click to inspect TrustLM evidence, claims, and metrics"
+        title="Click to inspect Ved.ai evidence, claims, and metrics"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -169,7 +169,7 @@ export default function AnswerAnalysis({ trust, verification, sources = [] }) {
             </div>
           </div>
 
-          <span className="trustlm-brand">TrustLM</span>
+          <span className="ved.ai-brand">Ved.ai</span>
 
           <span className="trustlm-score-pill" style={{ color }}>
             {scoreVal}%
@@ -264,13 +264,12 @@ export default function AnswerAnalysis({ trust, verification, sources = [] }) {
                         title="Click to view supporting source passages"
                       >
                         <span
-                          className={`claim-status-badge ${
-                            isSupported
+                          className={`claim-status-badge ${isSupported
                               ? 'supported'
                               : isPartial
-                              ? 'partially_supported'
-                              : 'unsupported'
-                          }`}
+                                ? 'partially_supported'
+                                : 'unsupported'
+                            }`}
                         >
                           {isSupported ? (
                             <CheckCircle2 size={11} />
@@ -283,8 +282,8 @@ export default function AnswerAnalysis({ trust, verification, sources = [] }) {
                             {isSupported
                               ? 'Verified'
                               : isPartial
-                              ? 'Partial'
-                              : 'Unsupported'}
+                                ? 'Partial'
+                                : 'Unsupported'}
                           </span>
                         </span>
 
@@ -432,10 +431,10 @@ export default function AnswerAnalysis({ trust, verification, sources = [] }) {
                   m.name === 'Composite Trust Score'
                     ? color
                     : m.value >= 70
-                    ? 'var(--green)'
-                    : m.value >= 40
-                    ? 'var(--amber)'
-                    : 'var(--steel)'
+                      ? 'var(--green)'
+                      : m.value >= 40
+                        ? 'var(--amber)'
+                        : 'var(--steel)'
 
                 return (
                   <div key={i} className="metric-row" title={`${m.desc} (${m.formula})`}>
