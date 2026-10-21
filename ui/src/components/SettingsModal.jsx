@@ -73,10 +73,10 @@ export default function SettingsModal({
       content = `# Ved.ai Research Session: ${title}\n`
       content += `Date: ${new Date(activeConv.created_at || Date.now()).toLocaleString()}\n\n---\n\n`
       activeConv.messages.forEach((m) => {
-        const speaker = m.role === 'user' ? '### 👤 User' : '### 🤖 Ved.ai (TrustLM)'
+        const speaker = m.role === 'user' ? '### 👤 User' : '### 🤖 Ved.ai'
         content += `${speaker}\n${m.content}\n\n`
         if (m.trust) {
-          content += `*TrustLM Score: ${m.trust.score || 'N/A'} | Classification: ${m.trust.reason || ''}*\n\n`
+          content += `*Ved.ai Reliability Score: ${m.trust.score || 'N/A'} | Classification: ${m.trust.reason || ''}*\n\n`
         }
       })
     } else {
@@ -285,7 +285,7 @@ export default function SettingsModal({
                 <div className="settings-section">
                   <div className="settings-section-title">Export Research</div>
                   <p className="settings-section-desc">
-                    Download the current conversation including answers, source citations, and TrustLM reliability metrics.
+                    Download the current conversation including answers, source citations, and Ved.ai reliability metrics.
                   </p>
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>

@@ -61,13 +61,13 @@ class EmbeddingManager:
         self,
         model_name: str = DEFAULT_MODEL_NAME,
         device: Optional[str] = None,
-        batch_size: int = 32,
+        batch_size: int = 64,
     ) -> None:
         self.model_name = model_name
         self.batch_size = batch_size
         self._model = None  # Lazy-loaded on first use
         self._device = device
-        logger.info("[EMBED] EmbeddingManager initialized (model=%s).", model_name)
+        logger.info("[EMBED] EmbeddingManager initialized (model=%s, batch_size=%d).", model_name, batch_size)
 
     # ------------------------------------------------------------------ #
     # Lazy model loading                                                   #
@@ -94,7 +94,26 @@ class EmbeddingManager:
                     "Install it with:  pip install sentence-transformers"
                 ) from exc
 
-            logger.info("[EMBED] Loading embedding model '%s'…", self.model_name)
+            # Auto-detect optimal device and configure CPU parallelism if not explicitly specified
+            if not self._device:
+                try:
+                    import torch
+                    if torch.cuda.is_available():
+                        self._device = "cuda"
+                    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+                        self._device = "mps"
+                    else:
+                        self._device = "cpu"
+                        try:
+                            import os
+                            num_cpus = os.cpu_count() or 4
+                            torch.set_num_threads(min(8, num_cpus))
+                        except Exception:
+                            pass
+                except Exception:
+                    self._device = "cpu"
+
+            logger.info("[EMBED] Loading embedding model '%s' on %s…", self.model_name, self._device)
             kwargs = {}
             if self._device:
                 kwargs["device"] = self._device
@@ -177,9 +196,11 @@ class EmbeddingManager:
 
         logger.info("[EMBED] Generating embeddings for %d texts…", len(texts))
         model = self._get_model()
+        # Scale batch size dynamically for large document ingestion
+        effective_batch_size = max(self.batch_size, 128) if len(texts) >= 128 else self.batch_size
         vectors = model.encode(
             texts,
-            batch_size=self.batch_size,
+            batch_size=effective_batch_size,
             show_progress_bar=False,
             normalize_embeddings=True,
         )

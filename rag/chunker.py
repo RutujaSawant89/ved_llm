@@ -31,9 +31,11 @@ Configuration:
 
 from __future__ import annotations
 
+import bisect
 import logging
+from collections import deque
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Any, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +83,7 @@ class TextChunker:
 
     def __init__(
         self,
-        chunk_size: int = 1000,
+        chunk_size: int = 1500,
         chunk_overlap: int = 200,
         separators: Optional[List[str]] = None,
     ) -> None:
@@ -172,20 +174,29 @@ class TextChunker:
             )
             return chunks
 
+        # Precompute page boundaries for fast O(log P) binary search lookup
+        page_bounds = _build_page_bounds(text, pages) if pages else []
+
         # Fallback to standard recursive chunking
         raw_chunks = self._split(text)
 
         cursor = 0  # Track position in original text for start_char / end_char
+        text_len = len(text)
 
         for idx, chunk_text in enumerate(raw_chunks):
-            # Find the actual position of this chunk in the source text
-            start = text.find(chunk_text, cursor)
+            # Fast bounded search: search within a local window near cursor first
+            chunk_len = len(chunk_text)
+            window_end = min(text_len, cursor + chunk_len + 1200)
+            start = text.find(chunk_text, cursor, window_end)
             if start == -1:
-                start = cursor  # Fallback
-            end = start + len(chunk_text)
+                # Fallback: scan from cursor to end
+                start = text.find(chunk_text, cursor)
+                if start == -1:
+                    start = cursor  # Fallback
+            end = start + chunk_len
 
-            # Estimate page number from per-page text (PDFs)
-            page_num = _estimate_page(chunk_text, pages) if pages else None
+            # Fast O(log P) page number lookup using binary search
+            page_num = _fast_estimate_page(start, page_bounds) if page_bounds else None
 
             chunks.append(
                 TextChunk(
@@ -242,9 +253,9 @@ class TextChunker:
         return self._hard_cut(text)
 
     def _merge_splits(self, parts: List[str], separator: str) -> List[str]:
-        """Merge split parts into windows of chunk_size with chunk_overlap."""
+        """Merge split parts into windows of chunk_size with chunk_overlap using O(1) deque."""
         chunks: List[str] = []
-        current_parts: List[str] = []
+        current_parts: deque[str] = deque()
         current_len = 0
 
         for part in parts:
@@ -256,9 +267,9 @@ class TextChunker:
                 if chunk_text:
                     chunks.append(chunk_text)
 
-                # Keep overlap: drop parts from front until we're within overlap budget
+                # Keep overlap: drop parts from front until within overlap budget (O(1) popleft)
                 while current_parts and current_len > self.chunk_overlap:
-                    removed = current_parts.pop(0)
+                    removed = current_parts.popleft()
                     current_len -= len(removed) + len(separator)
 
             current_parts.append(part)
@@ -288,13 +299,51 @@ class TextChunker:
 # ------------------------------------------------------------------ #
 
 
+def _build_page_bounds(text: str, pages: List[str]) -> List[Tuple[int, int]]:
+    """Build precomputed (start_char, end_char) boundary offsets for each page.
+    Runs once per document in O(total_pages).
+    """
+    bounds: List[Tuple[int, int]] = []
+    cursor = 0
+    text_len = len(text)
+    for page_text in pages:
+        p_clean = page_text.strip()
+        if not p_clean:
+            bounds.append((cursor, cursor))
+            continue
+
+        # Look for prefix of page text in source text near cursor
+        prefix = p_clean[:80]
+        pos = text.find(prefix, cursor)
+        if pos != -1:
+            page_end = pos + len(p_clean)
+            bounds.append((pos, page_end))
+            cursor = page_end
+        else:
+            page_end = min(text_len, cursor + len(p_clean))
+            bounds.append((cursor, page_end))
+            cursor = page_end + 2
+    return bounds
+
+
+def _fast_estimate_page(start_char: int, page_bounds: List[Tuple[int, int]]) -> Optional[int]:
+    """Estimate which page (1-based) a chunk belongs to using O(log P) binary search."""
+    if not page_bounds:
+        return None
+
+    starts = [b[0] for b in page_bounds]
+    idx = bisect.bisect_right(starts, start_char) - 1
+    if 0 <= idx < len(page_bounds):
+        return idx + 1
+    return 1
+
+
 def _estimate_page(chunk_text: str, pages: List[str]) -> Optional[int]:
-    """Estimate which page (1-based) a chunk belongs to.
+    """Legacy helper for estimating page number (retained for backward compatibility).
 
     Searches each page's text for the beginning of the chunk text.
     Returns the first matching page index, or None if not found.
     """
-    # Use the first 100 characters of the chunk as a fingerprint
     fingerprint = chunk_text[:100].strip()
     if not fingerprint:
         return None

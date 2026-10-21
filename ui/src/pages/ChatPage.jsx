@@ -28,9 +28,6 @@ export default function ChatPage({
     setTimeout(() => setToast(null), 4000)
   }
 
-  const totalChunks = docStats?.total_chunks ?? 0
-  const isIndexed = totalChunks > 0
-
   const fiveSuggestions = [
     {
       label: 'Key Findings',
@@ -76,22 +73,10 @@ export default function ChatPage({
         /* ================= Centered Empty State ================= */
         <div className="chat-scroll-area centered-empty-wrapper">
           <div className="chat-centered-hero">
-            {/* Status Pill */}
-            <div className="chat-empty-badge">
-              <span
-                className={`chat-empty-badge-dot ${isIndexed ? '' : 'empty'}`}
-              />
-              <span className="chat-empty-badge-text">
-                {isIndexed
-                  ? `${totalChunks} document chunks indexed in ChromaDB`
-                  : 'No documents indexed yet — upload files to verify answers'}
-              </span>
-            </div>
-
             {/* Hero Headings */}
             <h1 className="chat-empty-title">Research with context.</h1>
             <p className="chat-empty-subtitle">
-              Ask questions, explore your documents, and inspect real evidence with TrustLM reliability scoring.
+              Ask questions, explore your documents, and inspect real evidence with Ved.ai reliability scoring.
             </p>
 
             {/* Centered Message Composer */}

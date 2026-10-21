@@ -27,7 +27,7 @@ export default function ThinkingIndicator() {
       icon: Brain,
     },
     {
-      title: 'TrustLM Evaluation',
+      title: 'Ved.ai Evaluation',
       desc: 'Extracting factual claims & verifying reliability',
       icon: ShieldCheck,
     },

@@ -110,7 +110,7 @@ export default function Message({
         {/* Assistant Identification Header */}
         <div className="assistant-header">
           <div className="assistant-avatar">V</div>
-          <span>{generator || 'Ved.ai'}</span>
+          <span>{generator && !generator.includes('TrustLM') ? generator : 'Ved.ai'}</span>
         </div>
 
         {/* Structured Message Content */}
