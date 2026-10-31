@@ -1,11 +1,11 @@
-# TrustLM: A Custom Large Language Model for Reliable AI Responses
+# Ved.Ai: A Custom Large Language Model for Reliable AI Responses
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-orange.svg)](https://pytorch.org/)
 [![License: Academic Research](https://img.shields.io/badge/License-Academic_Research-green.svg)](#)
 
 > **Important Architecture Notice**:
-> **TrustLM is not a wrapper around any external pretrained LLM.**
+> **Ved.Ai is not a wrapper around any external pretrained LLM.**
 > We are constructing a compact, decoder-only Transformer language model from the ground up using **pure PyTorch**. Every layer—from multi-head causal attention and feed-forward networks to tokenization, verification, memory, and unlearning—is natively implemented and fully inspectable.
 
 ---
@@ -14,7 +14,7 @@
 
 Modern large language models struggle with unquantified hallucinations, black-box confidence estimates, and stubborn data contamination. When an LLM produces erroneous or outdated facts, retraining from scratch is computationally prohibitive, and fine-tuning often fails to guarantee that obsolete or sensitive data has actually been eliminated.
 
-**TrustLM** investigates an integrated architecture designed from first principles for reliability, verifiable generation, explicit trust calibration, and targeted machine unlearning.
+**Ved.Ai** investigates an integrated architecture designed from first principles for reliability, verifiable generation, explicit trust calibration, and targeted machine unlearning.
 
 ### Primary Research Goals
 
@@ -76,7 +76,7 @@ Modern large language models struggle with unquantified hallucinations, black-bo
 ## 📁 Repository Structure
 
 ```
-TrustLM/
+Ved.Ai/
 ├── data/                  # Dataset management (raw corpora, tokenized tensors, split caches)
 │   ├── README.md          # Guide to data layouts (raw, processed, retain/forget sets)
 │   └── __init__.py
@@ -113,7 +113,7 @@ TrustLM/
 
 ## ⚙️ Configuration System (`config.py`)
 
-TrustLM adopts a strongly-typed, modular dataclass configuration hierarchy:
+Ved.Ai adopts a strongly-typed, modular dataclass configuration hierarchy:
 
 | Config Class | Scope | Key Parameters |
 | :--- | :--- | :--- |
@@ -130,7 +130,7 @@ TrustLM adopts a strongly-typed, modular dataclass configuration hierarchy:
 Configurations can be serialized and exported to JSON or loaded programmatically:
 
 ```python
-from config import TrustLMConfig, get_default_config
+from config import Ved.AiConfig, get_default_config
 
 cfg = get_default_config()
 cfg.save_json("config.json")
